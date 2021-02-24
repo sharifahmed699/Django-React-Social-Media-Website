@@ -40,11 +40,15 @@ class PostView(APIView):
     permission_classes = [IsAuthenticated, ]
     authentication_classes = [TokenAuthentication, ]
 
-    def get(self, request):
-        posts_obj = Post.objects.all().order_by('-id')
-        data = commoneposts(posts_obj, request)
-
-        return Response(data)
+    def get(self, request, pk=None):
+        if pk:
+            post_obj = Post.objects.filter(id=pk)
+            data = commoneposts(post_obj, request)
+            return Response(data)
+        else:
+            posts_obj = Post.objects.all().order_by('-id')
+            data = commoneposts(posts_obj, request)
+            return Response(data)
 
 
 class AddLikeView(APIView):

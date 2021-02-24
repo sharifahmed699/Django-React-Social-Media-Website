@@ -1,4 +1,4 @@
-import { Avatar, Button, Card, CardActionArea, CardContent, CardHeader, CardMedia, Grid, IconButton, TextField, Typography } from '@material-ui/core'
+import { Avatar, Button, Card, CardActionArea, CardContent, CardHeader, CardMedia, ClickAwayListener, Grid, IconButton, makeStyles, MenuItem, TextField, Typography } from '@material-ui/core'
 import React, { useState } from 'react'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import FavoriteIcone from '@material-ui/icons/Favorite'
@@ -9,11 +9,26 @@ import { SingleComment } from './SingleComment'
 import Axios from "axios";
 import { domain, header } from '../../env'
 import { useStateValue } from '../../state/stateProvider'
+import { useHistory } from 'react-router-dom'
 
-const SinglePost = ({ post }) => {
+const styles = makeStyles({
+  mbtn: {
+    position: 'relative',
+    marginLeft: '30px'
+  },
+  items: {
+    position: 'absolute',
+    zIndex: '999'
+  }
+})
+
+const SinglePost = ({ post, details = false  }) => {
     const [showComment, setShowComment] = useState(false);
     const [title, setTitle] = useState('');
+    const [menu, setMenu] = useState(false);
     const [{ }, dispatch] = useStateValue()
+    const classes = styles();
+    const history = useHistory();
     const addlike  = () => {
         Axios({
           url: `${domain}/api/addlike/`,
@@ -58,6 +73,9 @@ const SinglePost = ({ post }) => {
           console.log(error);
         })
       }
+      const godetails = () => {
+        history.push(`/post/${post?.id}`)
+      }
     return (
         <Card style={{margin:'10px 0px'}}>
             <CardHeader
@@ -65,32 +83,49 @@ const SinglePost = ({ post }) => {
                 title={post?.profile?.user?.username}
                 subheader={post?.created_at}
                 action={
-                    <IconButton>
-                        <MoreVertIcon></MoreVertIcon>
+                  <>
+                    <IconButton className={classes.mbtn} onClick={() => setMenu(!menu)}>
+                      <MoreVertIcon />
                     </IconButton>
+                    {
+                      menu &&
+                      <ClickAwayListener onClickAway={() => setMenu(false)} >
+        
+                        <Card className={classes.items} >
+                          <MenuItem>Profile</MenuItem>
+                          <MenuItem>Edit</MenuItem>
+                          <MenuItem>Delate</MenuItem>
+                        </Card>
+                      </ClickAwayListener>
+                    }
+                  </>
                 }
                
             />
             <CardContent>
-                <CardActionArea>
+                <CardActionArea onClick={godetails}>
                 <Typography variant="h5">
                 {post?.title}
             </Typography>
                 </CardActionArea>
-            <CardActionArea>
+            <CardActionArea onClick={godetails}>
             <CardMedia 
                 style={{height:0, paddingTop:"50%"}}
                 image={post?.image}
             />
             </CardActionArea>
-            <CardActionArea>
-                <Typography>
-                    {
-                        post?.content?.length > 100
-                        ? post?.content?.substring(0,100)
-                        :post?.content
-                    }
-                </Typography>
+            <CardActionArea onClick={godetails}>
+            {
+            details ?
+              <Typography>
+                {post?.content}
+              </Typography> :
+              <Typography>
+                {post?.content?.length > 100
+                  ? post?.content?.substring(0, 100)
+                  : post?.content}
+              </Typography>
+          }
             </CardActionArea>
             </CardContent>
             <Grid container>
